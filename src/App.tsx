@@ -1,35 +1,43 @@
 import { Text, Card, Button, Checkbox, Box } from "dracula-ui";
 import useCopy from "@react-hook/copy";
 import passfather from "passfather";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
-  const [password, setPassword] = useState(
-    passfather({
-      numbers: false,
-      uppercase: false,
-      lowercase: true,
-      symbols: false, // Disable symbols
-      length: 16,
-    })
-  );
+  const notify = () => toast("Copied to clipboard");
+  const password = passfather();
+
+  const [passwordConfig, setPasswordConfig] = useState({
+    numbers: false,
+    uppercase: false,
+    lowercase: true,
+    symbols: false, // Disable symbols
+    length: 16,
+  });
 
   function makePassword() {
-    setPassword(passfather());
+    setPasswordConfig(password);
   }
+  console.log("passwordConfig.numbers: " + passwordConfig.numbers);
+  console.log("password: " + password);
+  console.log("passwordConfig: " + passwordConfig);
+  // useMemo
+  const { copied, copy, reset } = useCopy(passwordConfig);
 
-  const { copied, copy, reset } = useCopy(password);
-
-  function handleChange(event) {
+  function handleChange(event: {
+    target: { name: any; value: any; type: any; checked: any };
+  }) {
     const { name, value, type, checked } = event.target;
-    setPassword((prevPassword) => {
+    setPasswordConfig((prevPassword) => {
       return {
         ...prevPassword,
         [name]: type === "checkbox" ? checked : value,
       };
     });
   }
-
+  // makePassword();
   return (
     <div className="App">
       <div>
@@ -39,8 +47,16 @@ function App() {
             Password Generator{" "}
           </Text>
           <Text align="center" as="p">
-            {password}{" "}
-            <a onClick={copy}>
+            {() => {
+              setPasswordConfig(password);
+            }}
+            {password}
+            <a
+              onClick={() => {
+                copy();
+                // notify();
+              }}
+            >
               {copied === false ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -74,9 +90,22 @@ function App() {
                       d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0118 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3l1.5 1.5 3-3.75"
                     />
                   </svg>
-                  <Text size="xs" color="cyanGreen">
+                  <ToastContainer
+                    position="top-left"
+                    autoClose={500}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="dark"
+                    icon={true}
+                  />
+                  {/* <Text size="xs" color="cyanGreen">
                     copied!
-                  </Text>
+                  </Text> */}
                 </>
               )}
             </a>
@@ -94,11 +123,11 @@ function App() {
               <Box mb="xs">
                 <Checkbox
                   type="checkbox"
-                  id="hasNumbers"
+                  id="numbers"
                   color="white"
-                  name="hasNumbers"
+                  name="numbers"
                   onChange={handleChange}
-                  checked={passfather.numbers}
+                  checked={passwordConfig.numbers}
                   defaultChecked={true}
                 />
                 <label htmlFor="white" className="drac-text drac-text-white">
@@ -139,12 +168,9 @@ function App() {
                 </label>
               </Box>
             </Box>
-            ;
           </center>
-          ;
         </Card>
       </div>
-      ;
     </div>
   );
 }
